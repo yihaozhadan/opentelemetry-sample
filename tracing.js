@@ -5,6 +5,8 @@ const { OTLPMetricExporter } = require('@opentelemetry/exporter-metrics-otlp-htt
 const { PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics');
 const { Resource } = require('@opentelemetry/resources');
 const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventions');
+const { MeterProvider } = require('@opentelemetry/sdk-metrics');
+const { metrics } = require('@opentelemetry/api');
 
 function setupTelemetry() {
     // Configure the resource with service metadata
@@ -17,20 +19,19 @@ function setupTelemetry() {
     const sdk = new opentelemetry.NodeSDK({
         resource: resource,
         traceExporter: new OTLPTraceExporter({
-            url: 'http://localhost:4318/v1/traces',
+            url: 'http://localhost:8888/v1/traces',
         }),
         metricReader: new PeriodicExportingMetricReader({
             exporter: new OTLPMetricExporter({
-                url: 'http://localhost:4318/v1/metrics',
+                url: 'http://localhost:8888/v1/metrics',
             }),
-            // Export metrics every 1 second
             exportIntervalMillis: 1000,
         }),
         instrumentations: [
             getNodeAutoInstrumentations({
                 '@opentelemetry/instrumentation-http': {
                     enabled: true,
-                    ignoreIncomingPaths: ['/health'], // Ignore health check endpoints
+                    ignoreIncomingPaths: ['/health'],
                 },
                 '@opentelemetry/instrumentation-express': {
                     enabled: true,
@@ -41,6 +42,22 @@ function setupTelemetry() {
 
     // Initialize the SDK
     sdk.start();
+
+    return sdk;
 }
 
-module.exports = { setupTelemetry };
+// Create custom metrics
+function createCustomMetrics() {
+    const meter = metrics.getMeter('example-http-service');
+    
+    const responseTimeHistogram = meter.createHistogram('http_server_duration', {
+        description: 'HTTP server response time',
+        unit: 'ms',
+    });
+
+    return {
+        responseTimeHistogram
+    };
+}
+
+module.exports = { setupTelemetry, createCustomMetrics };

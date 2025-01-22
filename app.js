@@ -1,16 +1,28 @@
-// app.js
 const express = require('express');
-const { setupTelemetry } = require('./tracing');
+const { setupTelemetry, createCustomMetrics } = require('./tracing');
 const { trace } = require('@opentelemetry/api');
 
 // Initialize OpenTelemetry
-setupTelemetry();
+const sdk = setupTelemetry();
+const { responseTimeHistogram } = createCustomMetrics();
 
 const app = express();
 const PORT = 3000;
 
-// Middleware to add custom attributes to spans
+// Middleware to track response time
 app.use((req, res, next) => {
+    const startTime = Date.now();
+    
+    // Add listener for when response finishes
+    res.on('finish', () => {
+        const duration = Date.now() - startTime;
+        responseTimeHistogram.record(duration, {
+            route: req.path,
+            method: req.method,
+            status_code: res.statusCode.toString()
+        });
+    });
+
     const span = trace.getActiveSpan();
     if (span) {
         span.setAttribute('http.user_agent', req.headers['user-agent']);
@@ -19,20 +31,19 @@ app.use((req, res, next) => {
     next();
 });
 
-// Example route with custom span
+// Example route with custom span and simulated delay
 app.get('/users/:id', async (req, res) => {
     const tracer = trace.getTracer('example-http-service');
     
-    // Create a new span for this operation
     await tracer.startActiveSpan('fetch-user-details', async (span) => {
         try {
-            // Simulate database lookup
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Simulate random response time between 100-500ms
+            const delay = Math.floor(Math.random() * 400) + 100;
+            await new Promise(resolve => setTimeout(resolve, delay));
             
             span.setAttribute('user.id', req.params.id);
             
-            // Simulate successful response
-            res.json({ id: req.params.id, name: 'John Doe' });
+            res.json({ id: req.params.id, name: 'John Doe', responseTime: delay });
         } catch (error) {
             span.recordException(error);
             span.setStatus({ code: opentelemetry.SpanStatusCode.ERROR });
