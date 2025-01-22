@@ -1,0 +1,31 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.65.0
+    ports:
+      - "16686:16686"  # Web UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - monitoring
+
+  otel-collector:
+    image: otel/opentelemetry-collector:0.118.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "8888:4318"   # OTLP HTTP receiver (mapped to different port to avoid conflict)
+      - "13133:13133" # Health check
+    depends_on:
+      - jaeger
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
