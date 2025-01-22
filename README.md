@@ -1,26 +1,80 @@
-Start the services:
-```bash
-docker compose up -d
-```
+# OpenTelemetry Node.js Sample Application
 
-The services will be available at:
+This repository demonstrates how to implement OpenTelemetry instrumentation in a Node.js application with distributed tracing and metrics collection. The setup includes Jaeger for trace visualization and Prometheus for metrics monitoring.
 
-Jaeger UI: http://localhost:16686
-OpenTelemetry Collector endpoint: http://localhost:4318
+## Components
 
-The Node.js application is configured to send data to the collector at port 4318.
+- **Node.js Application**: A sample application with OpenTelemetry instrumentation
+- **OpenTelemetry Collector**: Receives, processes, and exports telemetry data
+- **Jaeger**: Distributed tracing system for visualization and analysis
+- **Prometheus**: Metrics collection and monitoring
 
-The setup includes:
+## Prerequisites
 
-Jaeger all-in-one image that includes the collector, query service, and UI OpenTelemetry Collector configured to:
+- Docker and Docker Compose
+- Node.js (v14 or later)
+- npm
 
-- Receive OTLP over HTTP
-- Batch process the traces
-- Export to Jaeger
-- Include debug logging
+## Installation
 
-Once everything is running, you can:
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-1. Run your Node.js application
-2. Make some HTTP requests to your endpoints
-3. Visit the Jaeger UI at http://localhost:16686 to see your traces
+## Configuration Files
+
+- `docker-compose.yml`: Defines the required services (OpenTelemetry Collector, Jaeger, Prometheus)
+- `otel-collector-config.yaml`: OpenTelemetry Collector configuration
+- `prometheus.yml`: Prometheus configuration
+- `tracing.js`: OpenTelemetry instrumentation setup
+- `app.js`: Sample Node.js application
+
+## Running the Application
+
+1. Start the services:
+   ```bash
+   docker compose up -d
+   ```
+
+2. Run the Node.js application:
+   ```bash
+   node app.js
+   ```
+
+## Service Endpoints
+
+- **Jaeger UI**: http://localhost:16686
+- **OpenTelemetry Collector**: http://localhost:4318
+- **Prometheus**: http://localhost:9090
+- **Sample Application**: http://localhost:3000
+
+## Features
+
+- Automatic instrumentation of HTTP requests
+- Custom span attributes and events
+- Trace context propagation
+- Metrics collection and export
+- Debug logging in the collector
+
+## Monitoring
+
+1. **View Traces**:
+   - Access Jaeger UI at http://localhost:16686
+   - Select the service and search for traces
+
+2. **View Metrics**:
+   - Access Prometheus UI at http://localhost:9090
+   - Use the PrometheusQueries.md file for example queries
+
+## Troubleshooting
+
+If you encounter issues:
+1. Check if all containers are running: `docker compose ps`
+2. View collector logs: `docker compose logs otel-collector`
+3. Ensure all ports are available and not used by other services
+
+## License
+
+This project is open source and available under the MIT license.
