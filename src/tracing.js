@@ -4,15 +4,16 @@ const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-http')
 const { OTLPMetricExporter } = require('@opentelemetry/exporter-metrics-otlp-http');
 const { PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics');
 const { Resource } = require('@opentelemetry/resources');
-const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventions');
-const { MeterProvider } = require('@opentelemetry/sdk-metrics');
+const { SERVICE_NAME, SERVICE_VERSION } = require('@opentelemetry/semantic-conventions');
 const { metrics } = require('@opentelemetry/api');
 
 function setupTelemetry() {
     // Configure the resource with service metadata
     const resource = new Resource({
-        [SemanticResourceAttributes.SERVICE_NAME]: 'example-http-service',
-        [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
+        [SERVICE_NAME]: 'example-http-service',
+        'service.name': 'example-http-service',
+        'service.namespace': 'default',
+        [SERVICE_VERSION]: '1.0.0',
     });
 
     // Create and configure the OpenTelemetry SDK

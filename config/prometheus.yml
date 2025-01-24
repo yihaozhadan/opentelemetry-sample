@@ -8,5 +8,5 @@ scrape_configs:
       - targets: ['otel-collector:8889']
     metric_relabel_configs:
       - source_labels: [__name__]
-        regex: '.*http_server_duration_.*'
+        regex: '.*duration.*|.*_total|.*_sum|.*_count|.*_bucket'
         action: keep

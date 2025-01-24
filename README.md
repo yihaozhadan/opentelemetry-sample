@@ -42,6 +42,11 @@ This repository demonstrates how to implement OpenTelemetry instrumentation in a
    ```bash
    node app.js
    ```
+   
+3. Run the test:
+   ```bash
+   k6 run test/getCustomer.js
+   ```
 
 ## Service Endpoints
 
